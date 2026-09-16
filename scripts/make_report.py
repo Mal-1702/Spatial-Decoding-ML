@@ -86,3 +86,42 @@ def fig_stimrecon(ps):
     fig.suptitle("Experiment 1 - envelope decoding works in every condition (thin lines = subjects)",
                  fontsize=10, x=0.01, ha="left")
     save(fig, "fig1_stimulus_reconstruction.png")
+
+
+# ---- Experiment 2: pooled spatial decoding ----------------------------------------------
+def fig_spatial_vs_window(sp):
+    conds = conditions_present(sp, "test_condition")
+    fig, axes = plt.subplots(1, len(conds), figsize=(2.6 * len(conds), 2.9), sharey=True, layout="constrained")
+    for ax, c in zip(axes, conds):
+        for key, color in MAIN:
+            d = sp[(sp.test_condition == c) & (sp.model == key)]
+            g = d.groupby("window_s").accuracy
+            m, se = g.mean(), g.std() / np.sqrt(g.count())
+            ax.fill_between(m.index, m - se, m + se, color=color, alpha=0.15, lw=0)
+            ax.plot(m.index, m.values, color=color, marker="o", label=NAME[key])
+        chance_line(ax)
+        ax.set_xscale("log"); ax.set_xticks(C.WINDOWS_S, C.WINDOWS_S)
+        ax.set_title(f"{c}\n{C.GAZE_RELATION[c]}"); ax.set_xlabel("Decision window (s)")
+    axes[0].set_ylabel("Left/right accuracy (mean ± SEM)")
+    axes[-1].legend(loc="upper left", bbox_to_anchor=(1.02, 1), fontsize=8)
+    fig.suptitle("Experiment 2 - spatial decoding, leave-one-trial-out", fontsize=10, x=0.01, ha="left")
+    save(fig, "fig2_spatial_vs_window.png")
+
+
+def fig_per_subject(sp, perm):
+    conds = conditions_present(sp, "test_condition")
+    keys = list(MODELS)
+    fig, axes = plt.subplots(1, len(conds), figsize=(3.0 * len(conds), 3.6), sharey=True, layout="constrained")
+    rng = np.random.default_rng(1)
+    for ax, c in zip(axes, conds):
+        d = sp[(sp.test_condition == c) & (sp.window_s == L_MAIN)]
+        for i, k in enumerate(keys):
+            v = d.loc[d.model == k, "accuracy"]
+            ax.scatter(i + rng.uniform(-0.18, 0.18, len(v)), v, s=12, color=BLUE, alpha=0.6, lw=0)
+            ax.plot([i - 0.3, i + 0.3], [v.mean()] * 2, color=INK, lw=2)
+        chance_line(ax)
+        ax.set_xticks(range(len(keys)), [NAME[k] for k in keys], rotation=60, ha="right", fontsize=7)
+        ax.set_title(f"{c}\n{C.GAZE_RELATION[c]}")
+    axes[0].set_ylabel(f"Accuracy at {L_MAIN} s")
+    fig.suptitle("Every subject, every model (dot = subject, bar = mean)", fontsize=10, x=0.01, ha="left")
+    save(fig, "fig4_per_subject.png")
