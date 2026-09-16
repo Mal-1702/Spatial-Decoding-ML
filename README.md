@@ -115,3 +115,23 @@ recordings contain decodable attention information that does not depend on gaze.
 At the side swap, HEOG moves toward the newly attended side by a median of
 **+5.2 µV** in FixedVideo. The median is about 0 µV in NoVisuals, MovingVideo and
 MovingTargetNoise. The conditions manipulate gaze as intended.
+
+### 3. With trial-disjoint evaluation, no spatial decoder works (Figs 2, 4)
+Eight decoders were tested:
+- EOG-only
+- CSP+LDA
+- Riemannian
+- Riemannian with EOG regression
+- Riemannian on posterior channels
+- Riemannian on the alpha band
+- two decoders combining all gaze controls
+
+**None predicts the attended side above chance, in any condition, at any window from
+1 to 60 s.** That is 192 tests (8 models × 4 conditions × 6 windows). The smallest
+*uncorrected* p is 0.15, and every Holm-corrected p is 1.0.
+- At 10 s, condition means range from 43 % to 58 %.
+- The best mean is the EOG-only model on FixedVideo, at 57.6 %. Across subjects it
+  ranges from 23 % to 85 % (p = 0.19).
+
+The minimum expected switch duration (MESD) is not reported. It is undefined when
+accuracy is at chance.
