@@ -167,3 +167,16 @@ direction from gaze-free EEG. They cannot even recover it reliably from the EOG.
 accuracy such decoders show under common evaluation shortcuts can be fully explained
 by within-trial temporal drift. Speech-envelope decoding still works on the same
 data. So the problem lies in what spatial decoders pick up, not in the recordings.
+
+### Limitations
+* 9 of the 13 released subjects. Subjects 01 and 03 have no MovingTargetNoise.
+* The released data are high-passed at 1 Hz. This removes the slow, sustained
+  eye-position offset in the EOG, which is the most direct gaze signal. That likely
+  explains why even the EOG-only model is weak. Unfiltered data could behave
+  differently.
+* Within-subject models only. Cross-subject and cross-dataset transfer (DTU, KU
+  Leuven 2016) was not tested.
+* 2 trials per condition per subject, so per-subject, per-condition significance
+  has very low power (see `run_permutation.py`).
+* Only classical linear models. A CNN was not tested. Given the drift result, any
+  such model must be evaluated trial-disjoint.
