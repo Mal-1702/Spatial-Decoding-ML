@@ -125,3 +125,30 @@ def fig_per_subject(sp, perm):
     axes[0].set_ylabel(f"Accuracy at {L_MAIN} s")
     fig.suptitle("Every subject, every model (dot = subject, bar = mean)", fontsize=10, x=0.01, ha="left")
     save(fig, "fig4_per_subject.png")
+
+
+# ---- Experiment 3: cross-condition ------------------------------------------------------
+def fig_crosscond(cc):
+    keys = ["eog_ts", "eeg_csp", "eeg_ts", "gazectrl_ts"]
+    conds = conditions_present(cc, "train_condition")
+    fig, axes = plt.subplots(1, len(keys), figsize=(3.3 * len(keys), 3.4), layout="constrained")
+    for ax, k in zip(axes, keys):
+        d = cc[(cc.model == k) & (cc.window_s == L_MAIN)]
+        M = (d.groupby(["train_condition", "test_condition"]).accuracy.mean()
+               .unstack().reindex(index=conds, columns=conds))
+        im = ax.imshow(M.values, cmap=DIVERGING, vmin=0.25, vmax=0.75)
+        for i in range(len(conds)):
+            for j in range(len(conds)):
+                if not np.isnan(M.values[i, j]):
+                    ax.text(j, i, f"{M.values[i, j]:.2f}", ha="center", va="center", fontsize=8, color=INK)
+        short = [c.replace("MovingTargetNoise", "MovTgtNoise") for c in conds]
+        ax.set_xticks(range(len(conds)), short, rotation=45, ha="right", fontsize=7)
+        ax.set_yticks(range(len(conds)), short, fontsize=7)
+        ax.grid(False); ax.set_title(NAME[k], fontsize=9)
+        ax.set_xlabel("Test condition")
+    axes[0].set_ylabel("Train condition")
+    cb = fig.colorbar(im, ax=axes, shrink=0.8)
+    cb.set_label("Mean accuracy (0.5 = chance)")
+    fig.suptitle(f"Experiment 3 - train on one condition, test on another ({L_MAIN} s windows)",
+                 fontsize=10, x=0.01, ha="left")
+    save(fig, "fig3_cross_condition.png")
