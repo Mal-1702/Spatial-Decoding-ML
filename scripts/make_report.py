@@ -191,3 +191,35 @@ def leakage_table(ls):
                         for a, m in zip(t.analysis, t.model)]
     t["model"] = t.model.map(NAME)
     return t
+
+
+# ---- tables ------------------------------------------------------------------------------
+def group_table(sp, L):
+    rows = []
+    for k in MODELS:
+        for c in conditions_present(sp, "test_condition"):
+            d = sp[(sp.model == k) & (sp.test_condition == c) & (sp.window_s == L)].sort_values("subject")
+            eog = sp[(sp.model == "eog_ts") & (sp.test_condition == c) & (sp.window_s == L)].sort_values("subject")
+            rows.append(dict(model=NAME[k], condition=c, n=len(d),
+                             mean_acc=d.accuracy.mean(), sd=d.accuracy.std(),
+                             min=d.accuracy.min(), max=d.accuracy.max(), mean_auc=d.auc.mean(),
+                             p_vs_chance=S.vs_chance(d.accuracy),
+                             p_vs_eog=np.nan if k == "eog_ts" else S.paired(d.accuracy.values, eog.accuracy.values)))
+    t = pd.DataFrame(rows)
+    t["p_holm"] = S.holm(t.p_vs_chance)
+    return t
+
+
+def cross_table(cc, L):
+    rows = []
+    decor = [c for c in ["MovingVideo", "MovingTargetNoise"] if c in set(cc.test_condition)]
+    for k in MODELS:
+        d = cc[(cc.model == k) & (cc.window_s == L)]
+        same = d[(d.train_condition == "FixedVideo") & (d.test_condition == "FixedVideo")]
+        to_dec = (d[(d.train_condition == "FixedVideo") & d.test_condition.isin(decor)]
+                    .groupby("subject").accuracy.mean())
+        rows.append(dict(model=NAME[k],
+                         FixedVideo_to_FixedVideo=same.accuracy.mean(),
+                         FixedVideo_to_gaze_decorrelated=to_dec.mean(),
+                         p_transfer_vs_chance=S.vs_chance(to_dec)))
+    return pd.DataFrame(rows)
