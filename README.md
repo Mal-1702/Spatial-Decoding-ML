@@ -160,3 +160,10 @@ one repetition and tested on the other therefore scores **below** chance: EEG
 Riemann gets 0.41 / 0.37 / 0.39 / 0.35 on the four conditions, which is the diagonal
 of Fig 3. Training on one condition and testing on a different one gives about 0.50.
 The gaze-controlled model is much less affected (diagonal 0.44-0.52).
+
+### Conclusion
+On AV-GC-AAD, classical covariance-based decoders cannot recover the attended
+direction from gaze-free EEG. They cannot even recover it reliably from the EOG. The
+accuracy such decoders show under common evaluation shortcuts can be fully explained
+by within-trial temporal drift. Speech-envelope decoding still works on the same
+data. So the problem lies in what spatial decoders pick up, not in the recordings.
