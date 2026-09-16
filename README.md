@@ -153,3 +153,10 @@ makes the EEG model look like it decodes attention at 68 %.
 - It separates **left from right** at chance (48 %).
 
 What it learns is slow drift over the recording, not attention.
+
+### 5. Drift also explains the below-chance scores (Fig 3)
+The two repetitions of each condition start on opposite sides. A model trained on
+one repetition and tested on the other therefore scores **below** chance: EEG
+Riemann gets 0.41 / 0.37 / 0.39 / 0.35 on the four conditions, which is the diagonal
+of Fig 3. Training on one condition and testing on a different one gives about 0.50.
+The gaze-controlled model is much less affected (diagonal 0.44-0.52).
