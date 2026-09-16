@@ -58,3 +58,31 @@ def fig_gaze(gz):
     ax.set_ylabel("HEOG shift toward newly\nattended side at swap (µV)")
     ax.set_title("Do the eyes follow the attended speaker?")
     save(fig, "fig0_gaze_check.png")
+
+
+# ---- Experiment 1: stimulus reconstruction ---------------------------------------------
+def stimrecon_table(sr):
+    per_subj = (sr.groupby(["subject", "condition", "eog_regression", "window_s"])
+                  [["n_correct", "n_windows"]].sum()
+                  .assign(accuracy=lambda d: d.n_correct / d.n_windows).reset_index())
+    return per_subj
+
+
+def fig_stimrecon(ps):
+    conds = conditions_present(ps, "condition")
+    fig, axes = plt.subplots(1, len(conds), figsize=(2.6 * len(conds), 2.8), sharey=True, layout="constrained")
+    for ax, c in zip(axes, conds):
+        for reg, color, label in [(False, BLUE, "EEG"), (True, AQUA, "EEG, EOG regressed")]:
+            d = ps[(ps.condition == c) & (ps.eog_regression == reg)]
+            for _, s in d.groupby("subject"):
+                ax.plot(s.window_s, s.accuracy, color=color, lw=0.6, alpha=0.25)
+            m = d.groupby("window_s").accuracy.mean()
+            ax.plot(m.index, m.values, color=color, marker="o", label=label)
+        chance_line(ax)
+        ax.set_xscale("log"); ax.set_xticks(C.WINDOWS_S, C.WINDOWS_S)
+        ax.set_title(c); ax.set_xlabel("Decision window (s)")
+    axes[0].set_ylabel("Accuracy (attended vs unattended)")
+    axes[0].legend(loc="upper left", fontsize=8)
+    fig.suptitle("Experiment 1 - envelope decoding works in every condition (thin lines = subjects)",
+                 fontsize=10, x=0.01, ha="left")
+    save(fig, "fig1_stimulus_reconstruction.png")
