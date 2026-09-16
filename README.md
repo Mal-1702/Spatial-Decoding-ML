@@ -153,3 +153,50 @@ makes the EEG model look like it decodes attention at 68 %.
 - It separates **left from right** at chance (48 %).
 
 What it learns is slow drift over the recording, not attention.
+
+### 5. Drift also explains the below-chance scores (Fig 3)
+The two repetitions of each condition start on opposite sides. A model trained on
+one repetition and tested on the other therefore scores **below** chance: EEG
+Riemann gets 0.41 / 0.37 / 0.39 / 0.35 on the four conditions, which is the diagonal
+of Fig 3. Training on one condition and testing on a different one gives about 0.50.
+The gaze-controlled model is much less affected (diagonal 0.44-0.52).
+
+### Conclusion
+On AV-GC-AAD, classical covariance-based decoders cannot recover the attended
+direction from gaze-free EEG. They cannot even recover it reliably from the EOG. The
+accuracy such decoders show under common evaluation shortcuts can be fully explained
+by within-trial temporal drift. Speech-envelope decoding still works on the same
+data. So the problem lies in what spatial decoders pick up, not in the recordings.
+
+### Limitations
+* 9 of the 13 released subjects. Subjects 01 and 03 have no MovingTargetNoise.
+* The released data are high-passed at 1 Hz. This removes the slow, sustained
+  eye-position offset in the EOG, which is the most direct gaze signal. That likely
+  explains why even the EOG-only model is weak. Unfiltered data could behave
+  differently.
+* Within-subject models only. Cross-subject and cross-dataset transfer (DTU, KU
+  Leuven 2016) was not tested.
+* 2 trials per condition per subject, so per-subject, per-condition significance
+  has very low power (see `run_permutation.py`).
+* Only classical linear models. A CNN was not tested. Given the drift result, any
+  such model must be evaluated trial-disjoint.
+
+## Getting the data
+
+The dataset is **not** in this repository. It is about 1.4 GB, and its distribution
+belongs to KU Leuven.
+
+1. Download the preprocessed `.mat` files from Zenodo:
+   https://doi.org/10.5281/zenodo.11058711
+2. Put them in `Datasets/`, keeping the original file names
+   (`2024-AV-GC-AAD-subXX_preprocessed.mat`).
+
+## References
+
+* Rotaru, I., Geirnaert, S., Heintz, N., Van de Ryck, I., Bertrand, A., & Francart, T. (2024).
+  What are we really decoding? Unveiling biases in EEG-based decoding of the spatial focus
+  of auditory attention. *Journal of Neural Engineering*, 21(1), 016017.
+* Geirnaert, S. et al. Linear stimulus reconstruction baseline for the AV-GC-AAD dataset.
+  arXiv:2412.01401. Code: https://github.com/AlexanderBertrandLab/linear-stimulus-reconstruction-AAD-AV-GC-AAD-dataset
+* Barachant, A. et al. (2012). Multiclass brain-computer interface classification by
+  Riemannian geometry. *IEEE Transactions on Biomedical Engineering*, 59(4), 920-928.
