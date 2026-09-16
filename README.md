@@ -190,3 +190,13 @@ belongs to KU Leuven.
    https://doi.org/10.5281/zenodo.11058711
 2. Put them in `Datasets/`, keeping the original file names
    (`2024-AV-GC-AAD-subXX_preprocessed.mat`).
+
+## References
+
+* Rotaru, I., Geirnaert, S., Heintz, N., Van de Ryck, I., Bertrand, A., & Francart, T. (2024).
+  What are we really decoding? Unveiling biases in EEG-based decoding of the spatial focus
+  of auditory attention. *Journal of Neural Engineering*, 21(1), 016017.
+* Geirnaert, S. et al. Linear stimulus reconstruction baseline for the AV-GC-AAD dataset.
+  arXiv:2412.01401. Code: https://github.com/AlexanderBertrandLab/linear-stimulus-reconstruction-AAD-AV-GC-AAD-dataset
+* Barachant, A. et al. (2012). Multiclass brain-computer interface classification by
+  Riemannian geometry. *IEEE Transactions on Biomedical Engineering*, 59(4), 920-928.
