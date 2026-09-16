@@ -51,3 +51,25 @@ def run_subject(path):
                 cross += summarise_by_condition(dec, trials, dict(subject=sid, model=key, train_condition=a))
         print(f"sub{sid} {key} done", flush=True)
     return pooled, cross
+
+
+def collapse(df, keys):
+    """Pool windows over test trials, then recompute accuracy (AUC is averaged)."""
+    g = df.groupby(keys)
+    out = g[["n_windows", "n_correct"]].sum()
+    out["accuracy"] = out["n_correct"] / out["n_windows"]
+    out["auc"] = g["auc"].mean()
+    return out.reset_index()
+
+
+if __name__ == "__main__":
+    C.RESULTS_DIR.mkdir(exist_ok=True)
+    res = parallel_map(run_subject, [(p,) for p in data.subject_files()])
+    pooled = pd.DataFrame([r for p, _ in res for r in p])
+    cross = pd.DataFrame([r for _, c in res for r in c])
+    pooled.to_csv(C.RESULTS_DIR / "spatial_pooled_by_trial.csv", index=False)
+    collapse(pooled, ["subject", "model", "test_condition", "window_s"]).to_csv(
+        C.RESULTS_DIR / "spatial_pooled.csv", index=False)
+    collapse(cross, ["subject", "model", "train_condition", "test_condition", "window_s"]).to_csv(
+        C.RESULTS_DIR / "spatial_crosscond.csv", index=False)
+    print("saved")
