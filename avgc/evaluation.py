@@ -41,3 +41,19 @@ def to_decisions(ws_by_len, scores_by_len, masks_by_len, L):
              .agg(label=("label", "first"), score=("score", "mean"), n=("score", "size"))
              .reset_index())
     return agg[agg["n"] == group]          # drop incomplete windows at block ends
+
+
+def summarise(dec):
+    """Accuracy and AUROC over a set of decision windows."""
+    correct = int(((dec["score"] > 0).astype(int) == dec["label"]).sum())
+    n = len(dec)
+    auc = roc_auc_score(dec["label"], dec["score"]) if dec["label"].nunique() == 2 else np.nan
+    return {"n_windows": n, "n_correct": correct, "accuracy": correct / n, "auc": auc}
+
+
+def run_split(key, ws_by_len, train_trials, test_trials):
+    """Fit once per training window length, return {L: decision DataFrame}."""
+    scores, masks = {}, {}
+    for tl in sorted({train_len(L) for L in C.WINDOWS_S}):
+        scores[tl], masks[tl] = fit_predict(key, ws_by_len[tl], train_trials, test_trials)
+    return {L: to_decisions(ws_by_len, scores, masks, L) for L in C.WINDOWS_S}
