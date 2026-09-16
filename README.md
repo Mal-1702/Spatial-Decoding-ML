@@ -83,3 +83,19 @@ scripts/
   block are not independent, so a binomial test is anti-conservative. We permute
   labels at trial level instead (see `run_permutation.py`, which also documents the
   power limit of 2 trials per condition).
+
+## Reproduce
+
+```bash
+pip install -r requirements.txt
+cd scripts
+python run_gaze_check.py
+python run_stimulus_reconstruction.py
+python run_spatial_decoding.py
+python run_permutation.py
+python run_leakage_controls.py
+python make_report.py
+```
+
+On Windows, run these from PowerShell or cmd, not Git Bash. Python multiprocessing
+fails under Git Bash.
