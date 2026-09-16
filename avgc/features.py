@@ -24,3 +24,27 @@ def block_windows(trial, win_s):
     for b, (start, stop, label) in enumerate(trial.blocks):
         for k in range((stop - start) // w):
             yield start + k * w, b, label, k
+
+
+def subject_windows(trials, eeg_labels, win_lengths):
+    """Covariances for every view and every training window length."""
+    out = {w: {"covs": {}, "trial": [], "block": [], "label": [], "pos": []}
+           for w in win_lengths}
+    for ti, tr in enumerate(trials):
+        sig = views(tr, eeg_labels)
+        for w in win_lengths:
+            idx = list(block_windows(tr, w))
+            starts = np.array([i[0] for i in idx])
+            n = int(w * C.FS)
+            for name, x in sig.items():
+                segs = np.stack([x[s:s + n].T for s in starts])      # (n_win, ch, n)
+                out[w]["covs"].setdefault(name, []).append(
+                    covariances(segs, estimator="oas").astype(np.float64))
+            out[w]["trial"] += [ti] * len(idx)
+            out[w]["block"] += [i[1] for i in idx]
+            out[w]["label"] += [i[2] for i in idx]
+            out[w]["pos"] += [i[3] for i in idx]
+    return {w: WindowSet(covs={k: np.concatenate(v) for k, v in d["covs"].items()},
+                         trial=np.array(d["trial"]), block=np.array(d["block"]),
+                         label=np.array(d["label"]), pos=np.array(d["pos"]))
+            for w, d in out.items()}
