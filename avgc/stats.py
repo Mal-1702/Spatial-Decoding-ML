@@ -37,3 +37,11 @@ def binomial_threshold(n_windows, alpha=0.05):
     with the literature only: it assumes independent windows, which is false
     for consecutive windows of the same block, so it is anti-conservative."""
     return (binom.ppf(1 - alpha, n_windows, 0.5) + 1) / n_windows
+
+
+def markdown_table(df, floatfmt="{:.3f}"):
+    cols = list(df.columns)
+    fmt = lambda v: floatfmt.format(v) if isinstance(v, (float, np.floating)) else str(v)
+    lines = ["| " + " | ".join(map(str, cols)) + " |", "|" + "---|" * len(cols)]
+    lines += ["| " + " | ".join(fmt(v) for v in row) + " |" for row in df.itertuples(index=False)]
+    return "\n".join(lines)
