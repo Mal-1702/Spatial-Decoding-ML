@@ -180,3 +180,13 @@ data. So the problem lies in what spatial decoders pick up, not in the recording
   has very low power (see `run_permutation.py`).
 * Only classical linear models. A CNN was not tested. Given the drift result, any
   such model must be evaluated trial-disjoint.
+
+## Getting the data
+
+The dataset is **not** in this repository. It is about 1.4 GB, and its distribution
+belongs to KU Leuven.
+
+1. Download the preprocessed `.mat` files from Zenodo:
+   https://doi.org/10.5281/zenodo.11058711
+2. Put them in `Datasets/`, keeping the original file names
+   (`2024-AV-GC-AAD-subXX_preprocessed.mat`).
