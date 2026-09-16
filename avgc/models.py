@@ -25,3 +25,19 @@ MODELS = {
     "gazectrl_ts":  ("EEG_gazectrl",  "ts",  "Gaze-controlled EEG Riemann"),
     "gazectrl_csp": ("EEG_gazectrl",  "csp", "Gaze-controlled CSP+LDA"),
 }
+
+
+def lda():
+    return LinearDiscriminantAnalysis(solver="lsqr", shrinkage="auto")
+
+
+def tangent_space():
+    # Log-Euclidean reference mean (closed form, fast) with the affine-invariant map.
+    return TangentSpace(metric={"mean": "logeuclid", "map": "riemann"})
+
+
+def build(key):
+    _, method, _ = MODELS[key]
+    if method == "ts":
+        return make_pipeline(tangent_space(), lda())
+    return make_pipeline(CSP(nfilter=6, log=True, metric="euclid"), lda())
