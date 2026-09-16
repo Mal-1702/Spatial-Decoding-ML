@@ -99,3 +99,19 @@ python make_report.py
 
 On Windows, run these from PowerShell or cmd, not Git Bash. Python multiprocessing
 fails under Git Bash.
+
+## Results
+
+Full tables are in `results/RESULTS.md` (generated) and figures are in `figures/`.
+N = 9 subjects. All numbers are means across subjects unless stated otherwise.
+
+### 1. The neural signal is intact (Fig 1)
+Envelope reconstruction identifies the attended speaker with **69.5 %** accuracy at
+10 s and **85.2 %** at 60 s. Every subject is above chance, Wilcoxon p = 0.002 at
+every window length. Regressing out the EOG changes nothing (69.5 % / 86.6 %). The
+recordings contain decodable attention information that does not depend on gaze.
+
+### 2. Gaze follows attention only in FixedVideo (Fig 0)
+At the side swap, HEOG moves toward the newly attended side by a median of
+**+5.2 µV** in FixedVideo. The median is about 0 µV in NoVisuals, MovingVideo and
+MovingTargetNoise. The conditions manipulate gaze as intended.
