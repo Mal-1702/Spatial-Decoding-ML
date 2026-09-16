@@ -152,3 +152,42 @@ def fig_crosscond(cc):
     fig.suptitle(f"Experiment 3 - train on one condition, test on another ({L_MAIN} s windows)",
                  fontsize=10, x=0.01, ha="left")
     save(fig, "fig3_cross_condition.png")
+
+
+# ---- Experiment 5: leakage and drift controls ------------------------------------------
+LEAK_ANALYSES = [("leaky_random_cv", "Random window CV\n(leaky: ignores trials)"),
+                 ("side_decoding_loto", "Attended side\n(trial-disjoint)"),
+                 ("time_decoding_loto", "First vs second half\n(trial-disjoint)")]
+LEAK_KEYS = ["eog_ts", "eeg_csp", "eeg_ts", "gazectrl_ts"]
+
+
+def leakage_per_subject(lk):
+    return lk.groupby(["analysis", "model", "subject"]).accuracy.mean().reset_index()
+
+
+def fig_leakage(ls):
+    fig, axes = plt.subplots(1, len(LEAK_ANALYSES), figsize=(10, 3.4), sharey=True, layout="constrained")
+    rng = np.random.default_rng(2)
+    for ax, (a, title) in zip(axes, LEAK_ANALYSES):
+        for i, k in enumerate(LEAK_KEYS):
+            v = ls[(ls.analysis == a) & (ls.model == k)].accuracy
+            ax.scatter(i + rng.uniform(-0.15, 0.15, len(v)), v, s=14, color=BLUE, alpha=0.65, lw=0)
+            ax.plot([i - 0.28, i + 0.28], [v.mean()] * 2, color=INK, lw=2)
+            ax.text(i, 0.86, f"{v.mean():.2f}", ha="center", fontsize=8, color=INK2)
+        chance_line(ax)
+        ax.set_ylim(0.3, 0.9)
+        ax.set_xticks(range(len(LEAK_KEYS)), [NAME[k] for k in LEAK_KEYS], rotation=35, ha="right", fontsize=7)
+        ax.set_title(title)
+    axes[0].set_ylabel("Accuracy, 5 s windows")
+    fig.suptitle("Experiment 5 - leaky splits look good because EEG drifts over a trial "
+                 "(dot = subject, bar = mean)", fontsize=10, x=0.01, ha="left")
+    save(fig, "fig5_leakage_and_drift.png")
+
+
+def leakage_table(ls):
+    t = (ls.groupby(["analysis", "model"]).accuracy
+           .agg(mean="mean", sd="std", min="min", max="max").reset_index())
+    t["p_vs_chance"] = [S.vs_chance(ls[(ls.analysis == a) & (ls.model == m)].accuracy)
+                        for a, m in zip(t.analysis, t.model)]
+    t["model"] = t.model.map(NAME)
+    return t
