@@ -135,3 +135,21 @@ Eight decoders were tested:
 
 The minimum expected switch duration (MESD) is not reported. It is undefined when
 accuracy is at chance.
+
+### 4. The trap: leaky splits create accuracy out of drift (Fig 5, Exp 5)
+
+| 5 s windows | Random window CV (leaky) | Side, trial-disjoint | First vs second half, trial-disjoint |
+|---|---|---|---|
+| EEG Riemann | **68.3 %** (57-78) | 48.0 % | **68.5 %** (57-81) |
+| EEG CSP+LDA | 60.5 % | 46.2 % | 67.1 % |
+| EOG only | 59.6 % | 51.0 % | 58.6 % |
+| Gaze-controlled Riemann | 55.8 % | 49.6 % | 54.9 % |
+
+The attended side is constant within each 5-min block. A random window split
+therefore puts neighbouring windows of the same block in both train and test, which
+makes the EEG model look like it decodes attention at 68 %.
+- The same model separates the **first from the second half** of an unseen trial
+  just as well (68.5 %).
+- It separates **left from right** at chance (48 %).
+
+What it learns is slow drift over the recording, not attention.
