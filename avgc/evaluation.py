@@ -24,3 +24,20 @@ def fit_predict(key, ws, train_trials, test_trials, labels=None):
     te = np.isin(ws.trial, test_trials)
     model = build(key).fit(ws.covs[view][tr], y[tr])
     return model.decision_function(ws.covs[view][te]), te
+
+
+def to_decisions(ws_by_len, scores_by_len, masks_by_len, L):
+    """Decision windows of length L: direct scores if L <= TRAIN_MAX_S,
+    otherwise the mean score of consecutive TRAIN_MAX_S sub-windows."""
+    tl = train_len(L)
+    ws, sc, te = ws_by_len[tl], scores_by_len[tl], masks_by_len[tl]
+    df = pd.DataFrame({"trial": ws.trial[te], "block": ws.block[te],
+                       "label": ws.label[te], "pos": ws.pos[te], "score": sc})
+    if L == tl:
+        return df
+    group = L // tl
+    df["dec"] = df["pos"] // group
+    agg = (df.groupby(["trial", "block", "dec"])
+             .agg(label=("label", "first"), score=("score", "mean"), n=("score", "size"))
+             .reset_index())
+    return agg[agg["n"] == group]          # drop incomplete windows at block ends
