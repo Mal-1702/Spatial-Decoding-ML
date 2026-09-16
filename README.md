@@ -56,3 +56,30 @@ scripts/
   run_leakage_controls.py        Exp 5  leaky CV vs trial-disjoint, first-vs-second-half decoding
   make_report.py                 figures/ + results/RESULTS.md
 ```
+
+### Models (all linear, closed-form LDA with Ledoit-Wolf shrinkage)
+
+| Key | Input | Purpose |
+|---|---|---|
+| `eog_ts` | 4 EOG channels only | **gaze baseline**: what eyes alone can do |
+| `eeg_csp` | 64 EEG, CAR | classical BCI baseline |
+| `eeg_ts` | 64 EEG, CAR | Riemannian tangent space (strong classical decoder) |
+| `eeg_eogreg_ts` | EEG with EOG regressed out | gaze control 1 |
+| `eeg_post_ts` | 29 posterior channels, own reference | gaze control 2 (far from the eyes; a whole-head CAR would spread eye artifacts into them) |
+| `eeg_alpha_ts` | EEG 8-13 Hz | alpha lateralisation, a known neural marker of spatial attention |
+| `gazectrl_ts` / `gazectrl_csp` | all three controls combined | best attempt at a gaze-free decoder |
+
+### Evaluation rules
+
+* **Trial-disjoint splits.** A test trial is never seen in training, not even the
+  windows next to it. This is the most common mistake in the literature.
+* Decision windows of 1, 2, 5, 10, 30 and 60 s. Classifiers train on windows of
+  min(L, 5) s. Longer decisions average consecutive 5 s scores.
+* No hyperparameter is tuned on test data. LDA shrinkage is analytic. Ridge strength
+  for envelope decoding comes from an inner leave-one-trial-out on training trials.
+* Results are reported **per subject and per condition**. Group tests are exact
+  Wilcoxon signed-rank tests across subjects, with Holm correction.
+* **Why no window-level binomial test:** consecutive windows from the same 5-min
+  block are not independent, so a binomial test is anti-conservative. We permute
+  labels at trial level instead (see `run_permutation.py`, which also documents the
+  power limit of 2 trials per condition).
