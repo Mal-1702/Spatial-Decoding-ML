@@ -37,3 +37,33 @@ class Trial:
         first = 0 if self.init_side == "left" else 1
         s, h, e = C.SKIP_S * C.FS, C.SWAP_S * C.FS, C.TRIAL_S * C.FS
         return [(s, h, first), (h + s, e, 1 - first)]
+
+
+def subject_files():
+    return sorted(C.DATA_DIR.glob("2024-AV-GC-AAD-sub*_preprocessed.mat"))
+
+
+def subject_id(path):
+    return re.search(r"sub(\d+)", path.name).group(1)
+
+
+def load_subject(path):
+    m = sio.loadmat(path, squeeze_me=True, struct_as_record=False)
+    assert int(m["fs"]) == C.FS
+    sid = subject_id(path)
+    labels = [ch.Label for ch in m["metadata"][0].FileHeader.Channels]
+    assert labels[C.N_EEG:] == C.EXG, labels[C.N_EEG:]
+    n = C.TRIAL_S * C.FS
+    trials = []
+    for i, cond in enumerate(np.atleast_1d(m["conditionID"])):
+        base, rep = re.match(r"([A-Za-z]+)(\d)", cond).groups()
+        x = np.asarray(m["data"][i], dtype=np.float64)
+        assert x.shape == (n, C.N_EEG + 4), x.shape
+        trials.append(Trial(
+            subject=sid, index=i, condition=base, repetition=int(rep),
+            init_side=str(m["initAttention"][i]),
+            eeg=x[:, :C.N_EEG], exg=x[:, C.N_EEG:],
+            env_att=np.asarray(m["stimulus"].attendedEnvelopes[i][:n], dtype=np.float64),
+            env_unatt=np.asarray(m["stimulus"].unattendedEnvelopes[i][:n], dtype=np.float64),
+        ))
+    return sid, labels[:C.N_EEG], trials
